@@ -1,5 +1,5 @@
 ## execução do projeto
-    ### Pré-requisitos
+    *  Pré-requisitos
         - Ter o docker instalado na máquina
         - Node.js v20+
         - npm, pnpm ou yarn
