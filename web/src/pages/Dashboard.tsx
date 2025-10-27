@@ -7,24 +7,26 @@ import { XPDisplay } from "@/components/gamification/XPDisplay";
 import { StreakDisplay } from "@/components/gamification/StreakDisplay";
 import { StatsCard } from "@/components/ui/stats-card";
 import { mockUser, mockLeaderboard, mockGymLeaderboard } from "@/data/mockData";
-import { toast } from "sonner";
 import { 
   CheckCircle, 
   Trophy, 
   Users, 
   Building2, 
+  Target,
   Calendar
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 export const Dashboard = () => {
+  const { toast } = useToast();
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
 
   const handleCheckIn = () => {
     setHasCheckedIn(true);
-    toast(
-       "Check-in realizado!",
-    //  description: "+50 XP adicionados. Continue assim!",
-    );
+    toast({
+      title: "Check-in realizado!",
+      description: "+50 XP adicionados. Continue assim!",
+    });
   };
 
   return (

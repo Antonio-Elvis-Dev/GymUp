@@ -3,6 +3,7 @@ import { Badge } from "@/components/gamification/Badge";
 import { StatsCard } from "@/components/ui/stats-card";
 import { mockUser, mockCheckInHistory } from "@/data/mockData";
 import { 
+  User, 
   Trophy, 
   Calendar, 
   MapPin, 

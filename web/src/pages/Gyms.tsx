@@ -88,5 +88,3 @@ export const Gyms = () => {
     </div>
   );
 };
-
-export default Gyms
