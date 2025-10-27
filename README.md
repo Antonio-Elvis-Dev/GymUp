@@ -1,5 +1,5 @@
 ## execução do projeto
-    # Pré-requisitos
+    ### Pré-requisitos
         - Ter o docker instalado na máquina
         - Node.js v20+
         - npm, pnpm ou yarn
@@ -11,4 +11,4 @@
     - Na pasta web rode "npm run start:dev" para iniciar o frontend da aplicação.
 
 ## obs
-    - aos que tiverem acesso "colaborador" sempre criar uma branch e fazer os PR de modo a não gerar conflitos entre os demais contribuidores.
+    - Aos que tiverem acesso "colaborador" sempre criar uma branch e fazer os PR de modo a não gerar conflitos entre os demais colaboradores.
