@@ -15,16 +15,15 @@ import {
   Target,
   Calendar
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner"
 
 export const Dashboard = () => {
-  const { toast } = useToast();
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
 
   const handleCheckIn = () => {
     setHasCheckedIn(true);
-    toast({
-      title: "Check-in realizado!",
+    toast("Teste",{
+
       description: "+50 XP adicionados. Continue assim!",
     });
   };

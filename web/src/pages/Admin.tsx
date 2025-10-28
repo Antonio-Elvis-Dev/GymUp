@@ -13,10 +13,9 @@ import {
   Clock,
   UserCheck
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
+import { toast } from "sonner"
 export const Admin = () => {
-  const { toast } = useToast();
   const [pendingCheckIns, setPendingCheckIns] = useState(mockPendingCheckIns);
   const [gymForm, setGymForm] = useState({
     name: "",
@@ -26,25 +25,22 @@ export const Admin = () => {
 
   const handleApproveCheckIn = (id: string) => {
     setPendingCheckIns(prev => prev.filter(item => item.id !== id));
-    toast({
-      title: "Check-in aprovado",
+    toast("Check-in aprovado",{
       description: "O usuário recebeu os pontos XP",
     });
   };
 
   const handleRejectCheckIn = (id: string) => {
     setPendingCheckIns(prev => prev.filter(item => item.id !== id));
-    toast({
-      title: "Check-in rejeitado",
+    toast("Check-in rejeitado",{
       description: "O check-in foi removido da lista",
-      variant: "destructive"
+      
     });
   };
 
   const handleAddGym = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Academia cadastrada",
+    toast("Academia cadastrada",{
       description: `${gymForm.name} foi adicionada com sucesso`,
     });
     setGymForm({ name: "", address: "", phone: "" });

@@ -2,72 +2,78 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Dumbbell } from "lucide-react";
-import z from 'zod'
-import { useNavigate } from "react-router-dom";
+import z from "zod";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { zodResolver } from '@hookform/resolvers/zod'
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { RegisterPayLoad, registerUser } from "@/api/register";
 import { toast } from "sonner";
-
-interface LoginProps {
-  onLogin: () => void;
-}
+import { createSession } from "@/api/create-session";
+import { useAuth } from "@/hooks/useAuth";
 
 const registerFormSchema = z.object({
-  name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
-  email: z.string().email('A senha deve ter pelo menos 6 caracteres.'),
-  password: z.string().min(6, 'A senha deve ter pelo menos 6 caracteres.'),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem.',
-  path: ['confirmPassword']
-})
+  // name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
+  email: z.string().email("A senha deve ter pelo menos 6 caracteres."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+  // confirmPassword: z.string()
+});
+// .refine((data) => data.password === data.confirmPassword, {
+//   message: 'As senhas não coincidem.',
+//   path: ['confirmPassword']
+// })
 
-type RegisterForm = z.infer<typeof registerFormSchema>
+type RegisterForm = z.infer<typeof registerFormSchema>;
 
 export const Login = () => {
+  const { signIn } = useAuth();
 
-  const navigate = useNavigate()
+  const [searchParams] = useSearchParams();
 
   const {
     register,
     handleSubmit,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting },
   } = useForm<RegisterForm>({
-    resolver: zodResolver(registerFormSchema),
-    mode: 'onBlur',
-  })
-
-  const { mutateAsync: handleRegister, isPending } = useMutation({
-    mutationFn: registerUser,
-    onSuccess: () => {
-      toast.success('Registro efetuado com sucesso! Faça login para continuar.')
-      navigate('/sign-in')
+    defaultValues: {
+      email: searchParams.get("email") ?? "",
+      password: searchParams.get("password") ?? "",
     },
-    onError: (error) => {
-      const errorMessage = "Falha no registro. Tente novamente."
-      toast.error(errorMessage)
-    }
-  })
+  });
+
+  async function handleSignIn(data: RegisterForm) {
+    signIn(data);
+  }
+
+  // const { mutateAsync: handleRegister, isPending } = useMutation({
+  //   mutationFn: createSession,
+  //   onSuccess: () => {
+  //     toast.success("Login efetuado com sucesso! ");
+  //   },
+  //   onError: (error) => {
+  //     const errorMessage = "Falha na autenticação. Tente novamente.";
+  //     toast.error(errorMessage);
+  //   },
+  // });
   async function onSubmit(data: RegisterForm) {
     // Prepara o payload removendo a confirmação de senha
-    const { confirmPassword, ...registerData } = data
-
+    // const { confirmPassword, ...registerData } = data
     // O type 'registerData' agora é inferido corretamente como 'RegisterPayload'
-    await handleRegister(registerData as RegisterPayLoad)
+    // await handleRegister(registerData as RegisterPayLoad)
     // Nota: O 'try/catch' é opcional aqui, pois 'onError' do useMutation já lida com o erro.
   }
 
-  const isDisabled = isSubmitting || isPending
+  // const isDisabled = isSubmitting || isPending;
 
-  
   const [isLogin, setIsLogin] = useState(true);
- 
-
-
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -83,14 +89,13 @@ export const Login = () => {
           <CardDescription>
             {isLogin
               ? "Acesse sua conta para continuar treinando"
-              : "Crie sua conta e comece a ganhar XP"
-            }
+              : "Crie sua conta e comece a ganhar XP"}
           </CardDescription>
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            {!isLogin && (
+          <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
+            {/* {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="name">Nome completo</Label>
                 <Input
@@ -101,7 +106,7 @@ export const Login = () => {
                   required={!isLogin}
                 />
               </div>
-            )}
+            )} */}
 
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
@@ -109,7 +114,7 @@ export const Login = () => {
                 id="email"
                 type="email"
                 placeholder="seu@email.com"
-                {...register('email')}
+                {...register("email")}
                 required
               />
             </div>
@@ -120,11 +125,11 @@ export const Login = () => {
                 id="password"
                 type="password"
                 placeholder="••••••••"
-                 {...register('password')}
+                {...register("password")}
                 required
               />
             </div>
-             {!isLogin && (
+            {/* {!isLogin && (
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <Input
@@ -135,10 +140,10 @@ export const Login = () => {
                 required
               />
             </div>
-             )}
+             )} */}
 
-            <Button type="submit" className="w-full">
-              {isLogin ? "Entrar" : "Criar Conta"}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+               Entrar
             </Button>
 
             <div className="text-center">
@@ -147,10 +152,8 @@ export const Login = () => {
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-sm text-primary hover:underline"
               >
-                {isLogin
-                  ? "Não tem conta? Criar agora"
-                  : "Já tem conta? Fazer login"
-                }
+               
+                  Não tem conta? Criar agora
               </button>
             </div>
           </form>
