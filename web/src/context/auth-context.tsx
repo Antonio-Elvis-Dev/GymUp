@@ -1,4 +1,5 @@
 import { createSession } from "@/api/create-session";
+import { getMe, GetMeResponse } from "@/api/get-me";
 import { useMutation } from "@tanstack/react-query";
 import { createContext, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -15,8 +16,7 @@ const signInZod = z.object({
 type SignInForm = z.infer<typeof signInZod>;
 
 interface User {
-  id: string;
-  email: string;
+  token: string;
 }
 
 interface AuthContextType {
@@ -24,6 +24,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   signIn: (credentials: SignInForm) => Promise<void>;
+  userData: GetMeResponse | null;
   signOut: () => void;
 }
 
@@ -33,9 +34,15 @@ export const AuthContext = createContext<AuthContextType | undefined>(
 
 export function AuthProvider({ children }: AuthProps) {
   const [user, setUser] = useState<User | null>(null);
+  const [userData, setUserData] = useState<GetMeResponse | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
   const { mutateAsync: authenticate } = useMutation({
     mutationFn: createSession,
+  });
+
+   const { mutateAsync: getCurrentUser } = useMutation({
+    mutationFn: getMe ,
   });
 
   useEffect(() => {
@@ -46,6 +53,7 @@ export function AuthProvider({ children }: AuthProps) {
       setUser(JSON.parse(storedUser));
     }
 
+    fetchCurrentUser();
     setIsLoading(false);
   }, []);
   if (isLoading) {
@@ -55,15 +63,15 @@ export function AuthProvider({ children }: AuthProps) {
       </div>
     );
   }
-
   async function signIn({ email, password }: SignInForm) {
     try {
-      const { token,  id } = await authenticate({ email, password });
+      const { token } = await authenticate({ email, password });
 
-      const loggerUser = { id, email };
+      const loggerUser = { token };
       localStorage.setItem("authToken", token);
       localStorage.setItem("authUser", JSON.stringify(loggerUser));
       setUser(loggerUser);
+
       toast.success(`Bem-Vindo! `);
     } catch (error) {
       toast.error(`Credenciais inválidas  `);
@@ -71,14 +79,27 @@ export function AuthProvider({ children }: AuthProps) {
   }
 
   async function signOut() {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('authUser')
-    setUser(null)
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authUser");
+    setUser(null);
+  }
+
+  async function fetchCurrentUser() {
+    const currentUserData = await getCurrentUser(user);
+    console.log(currentUserData);
+    setUserData(currentUserData);
   }
 
   return (
     <AuthContext.Provider
-      value={{ signIn, signOut, isAuthenticated: !!user, user, isLoading }}
+      value={{
+        signIn,
+        signOut,
+        isAuthenticated: !!user,
+        user,
+        isLoading,
+        userData,
+      }}
     >
       {children}
     </AuthContext.Provider>

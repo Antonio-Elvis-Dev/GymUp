@@ -6,11 +6,16 @@ import { Profile } from "@/pages/Profile";
 import Index from "@/pages/Index";
 import { Login } from "@/pages/Login";
 import { PrivateRoutes } from "./private-routes";
+import { AuthLayout } from "@/layouts/auth";
+import { Register } from "@/pages/Register";
 
 const routes = [
   {
-    // errorElement:<Error/>
-    children: [{ path: "/sign-in", element: <Login /> }],
+    element: <AuthLayout />,
+    children: [
+      { path: "/sign-in", element: <Login /> },
+      { path: "/sign-up", element: <Register /> },
+    ],
   },
 
   {

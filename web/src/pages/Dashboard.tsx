@@ -16,18 +16,20 @@ import {
   Calendar
 } from "lucide-react";
 import { toast } from "sonner"
+import { useAuth } from "@/hooks/useAuth";
 
 export const Dashboard = () => {
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
 
   const handleCheckIn = () => {
     setHasCheckedIn(true);
-    toast("Teste",{
+    toast("Check-in realizado!",{
 
       description: "+50 XP adicionados. Continue assim!",
     });
   };
-
+  const { userData } = useAuth();
+console.log(userData)
   return (
     <div className="pb-20 bg-background min-h-screen">
       {/* Header */}

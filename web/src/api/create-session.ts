@@ -6,8 +6,7 @@ interface CreateSessionParams {
 }
 
 interface CreateSessionResponse {
-  id: string
-  email: string
+  
   token: string
 }
 
