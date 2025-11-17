@@ -1,6 +1,8 @@
 
 services:
   frontend:
+    container_name: frontend_gym_up
+
     build:
       context: ./web
       dockerfile: Dockerfile
@@ -12,11 +14,14 @@ services:
       - app-network
 
   backend:
+    container_name: backend_gym_up
+
     build:
       context: ./api
       dockerfile: Dockerfile
+    command: sh -c "npx prisma migrate deploy && npm run start:dev"
     ports:
-      - "3000:3000"
+      - "3333:3333"
     environment:
       - DATABASE_URL=postgresql://docker:docker@db:5432/dbGymUp
     depends_on:
@@ -26,6 +31,7 @@ services:
 
   db:
     image: bitnami/postgresql
+    container_name: database_gym_up
     ports:
       - "5432:5432"
     environment:
