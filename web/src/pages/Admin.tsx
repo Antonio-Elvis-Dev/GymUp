@@ -5,51 +5,46 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { mockPendingCheckIns } from "@/data/mockData";
-import { 
-  Plus, 
-  CheckCircle, 
-  XCircle, 
-  Building2, 
+import {
+  Plus,
+  CheckCircle,
+  XCircle,
+  Building2,
   Clock,
-  UserCheck
+  UserCheck,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
+import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 export const Admin = () => {
-  const { toast } = useToast();
   const [pendingCheckIns, setPendingCheckIns] = useState(mockPendingCheckIns);
   const [gymForm, setGymForm] = useState({
     name: "",
     address: "",
-    phone: ""
+    phone: "",
   });
 
   const handleApproveCheckIn = (id: string) => {
-    setPendingCheckIns(prev => prev.filter(item => item.id !== id));
-    toast({
-      title: "Check-in aprovado",
+    setPendingCheckIns((prev) => prev.filter((item) => item.id !== id));
+    toast("Check-in aprovado", {
       description: "O usuário recebeu os pontos XP",
     });
   };
 
   const handleRejectCheckIn = (id: string) => {
-    setPendingCheckIns(prev => prev.filter(item => item.id !== id));
-    toast({
-      title: "Check-in rejeitado",
+    setPendingCheckIns((prev) => prev.filter((item) => item.id !== id));
+    toast("Check-in rejeitado", {
       description: "O check-in foi removido da lista",
-      variant: "destructive"
     });
   };
 
   const handleAddGym = (e: React.FormEvent) => {
     e.preventDefault();
-    toast({
-      title: "Academia cadastrada",
+    toast("Academia cadastrada", {
       description: `${gymForm.name} foi adicionada com sucesso`,
     });
     setGymForm({ name: "", address: "", phone: "" });
   };
-
   return (
     <div className="pb-20 bg-background min-h-screen">
       {/* Header */}
@@ -66,7 +61,7 @@ export const Admin = () => {
             <TabsTrigger value="checkins">Validar Check-ins</TabsTrigger>
             <TabsTrigger value="gyms">Cadastrar Academia</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="checkins" className="mt-6">
             <Card>
               <CardHeader>
@@ -93,16 +88,21 @@ export const Admin = () => {
                   </div>
                 ) : (
                   pendingCheckIns.map((checkIn) => (
-                    <div key={checkIn.id} className="border border-border rounded-lg p-4">
+                    <div
+                      key={checkIn.id}
+                      className="border border-border rounded-lg p-4"
+                    >
                       <div className="flex items-center gap-3 mb-3">
-                        <img 
-                          src={checkIn.avatar} 
+                        <img
+                          src={checkIn.avatar}
                           alt={checkIn.user}
                           className="w-10 h-10 rounded-full"
                         />
                         <div className="flex-1">
                           <div className="font-medium">{checkIn.user}</div>
-                          <div className="text-sm text-muted-foreground">{checkIn.gym}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {checkIn.gym}
+                          </div>
                         </div>
                         <div className="text-right text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
@@ -111,9 +111,9 @@ export const Admin = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex gap-2">
-                        <Button 
+                        <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleApproveCheckIn(checkIn.id)}
@@ -122,7 +122,7 @@ export const Admin = () => {
                           <CheckCircle className="w-4 h-4 mr-2" />
                           Aprovar
                         </Button>
-                        <Button 
+                        <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleRejectCheckIn(checkIn.id)}
@@ -138,7 +138,7 @@ export const Admin = () => {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="gyms" className="mt-6">
             <Card>
               <CardHeader>
@@ -155,33 +155,48 @@ export const Admin = () => {
                       id="gym-name"
                       placeholder="Ex: FitLife Academia"
                       value={gymForm.name}
-                      onChange={(e) => setGymForm(prev => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) =>
+                        setGymForm((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="gym-address">Endereço</Label>
                     <Input
                       id="gym-address"
                       placeholder="Rua, número, bairro, cidade"
                       value={gymForm.address}
-                      onChange={(e) => setGymForm(prev => ({ ...prev, address: e.target.value }))}
+                      onChange={(e) =>
+                        setGymForm((prev) => ({
+                          ...prev,
+                          address: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label htmlFor="gym-phone">Telefone</Label>
                     <Input
                       id="gym-phone"
                       placeholder="(11) 99999-9999"
                       value={gymForm.phone}
-                      onChange={(e) => setGymForm(prev => ({ ...prev, phone: e.target.value }))}
+                      onChange={(e) =>
+                        setGymForm((prev) => ({
+                          ...prev,
+                          phone: e.target.value,
+                        }))
+                      }
                       required
                     />
                   </div>
-                  
+
                   <Button type="submit" className="w-full">
                     <Plus className="w-4 h-4 mr-2" />
                     Cadastrar Academia

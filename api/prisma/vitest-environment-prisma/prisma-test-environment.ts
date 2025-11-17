@@ -23,7 +23,7 @@ export default <Environment>{
         const schema = randomUUID()
         const databaseUrl = generateDatabaseUrl(schema)
 
-        console.log(databaseUrl)
+        // console.log(databaseUrl)
 
         process.env.DATABASE_URL = databaseUrl
 

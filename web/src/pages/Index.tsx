@@ -7,12 +7,8 @@ import { Admin } from "./Admin";
 import { BottomNav } from "@/components/layout/BottomNav";
 
 const Index = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeTab, setActiveTab] = useState("home");
 
-  if (!isAuthenticated) {
-    return <Login onLogin={() => setIsAuthenticated(true)} />;
-  }
+  const [activeTab, setActiveTab] = useState("home");
 
   const renderContent = () => {
     switch (activeTab) {
@@ -38,3 +34,4 @@ const Index = () => {
 };
 
 export default Index;
+// 

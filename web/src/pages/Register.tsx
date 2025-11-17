@@ -11,19 +11,29 @@ import {
 } from "@/components/ui/card";
 import { Dumbbell } from "lucide-react";
 import z from "zod";
-import { useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useMutation } from "@tanstack/react-query";
+import { RegisterPayLoad, registerUser } from "@/api/register";
+import { toast } from "sonner";
+import { createSession } from "@/api/create-session";
 import { useAuth } from "@/hooks/useAuth";
 
 const registerFormSchema = z.object({
-  email: z.string().email("A e-mail deve ter pelo menos 6 caracteres."),
-  password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres."),
-});
-
+  name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
+  email: z.string().email("A senha deve ter pelo menos 6 caracteres."),
+  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+  confirmPassword: z.string()
+})
+.refine((data) => data.password === data.confirmPassword, {
+  message: 'As senhas não coincidem.',
+  path: ['confirmPassword']
+})
 
 type RegisterForm = z.infer<typeof registerFormSchema>;
 
-export const Login = () => {
+export const Register = () => {
   const { signIn } = useAuth();
 
   const [searchParams] = useSearchParams();
@@ -43,7 +53,25 @@ export const Login = () => {
     signIn(data);
   }
 
+  // const { mutateAsync: handleRegister, isPending } = useMutation({
+  //   mutationFn: createSession,
+  //   onSuccess: () => {
+  //     toast.success("Login efetuado com sucesso! ");
+  //   },
+  //   onError: (error) => {
+  //     const errorMessage = "Falha na autenticação. Tente novamente.";
+  //     toast.error(errorMessage);
+  //   },
+  // });
+  async function onSubmit(data: RegisterForm) {
+    // Prepara o payload removendo a confirmação de senha
+    // const { confirmPassword, ...registerData } = data
+    // O type 'registerData' agora é inferido corretamente como 'RegisterPayload'
+    // await handleRegister(registerData as RegisterPayLoad)
+    // Nota: O 'try/catch' é opcional aqui, pois 'onError' do useMutation já lida com o erro.
+  }
 
+ 
 
   const [isLogin, setIsLogin] = useState(true);
 
@@ -67,8 +95,18 @@ export const Login = () => {
 
         <CardContent>
           <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
+            
+              <div className="space-y-2">
+                <Label htmlFor="name">Nome completo</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  placeholder="Seu nome"
+                  {...register('name')}
+                  required={!isLogin}
+                />
+              </div>
           
-
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -90,7 +128,18 @@ export const Login = () => {
                 required
               />
             </div>
-          
+           
+            <div className="space-y-2">
+              <Label htmlFor="password">Confirmar senha</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                 {...register('confirmPassword')}
+                required
+              />
+            </div>
+            
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
                Entrar
@@ -99,7 +148,7 @@ export const Login = () => {
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => setIsLogin(!isLogin)}
+                // onClick={}
                 className="text-sm text-primary hover:underline"
               >
                
