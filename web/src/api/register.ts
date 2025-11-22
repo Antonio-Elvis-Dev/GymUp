@@ -18,10 +18,9 @@ export interface RegisterResponse {
 }
 
 export async function registerUser(data: RegisterPayLoad): Promise<RegisterResponse> {
+
     try {
-        const response = await api.post('/users', {
-            data
-        })
+        const response = await api.post('/users', data)
 
         return response.data
     } catch (error) {
