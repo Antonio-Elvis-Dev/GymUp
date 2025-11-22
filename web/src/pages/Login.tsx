@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Dumbbell } from "lucide-react";
 import z from "zod";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -20,14 +20,13 @@ const registerFormSchema = z.object({
   password: z.string().min(8, "A senha deve ter pelo menos 8 caracteres."),
 });
 
-
 type RegisterForm = z.infer<typeof registerFormSchema>;
 
 export const Login = () => {
   const { signIn } = useAuth();
 
   const [searchParams] = useSearchParams();
-
+  const navigation = useNavigate();
   const {
     register,
     handleSubmit,
@@ -43,10 +42,7 @@ export const Login = () => {
     signIn(data);
   }
 
-
-
   const [isLogin, setIsLogin] = useState(true);
-
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
@@ -57,18 +53,15 @@ export const Login = () => {
             </div>
             <h1 className="text-2xl font-bold text-foreground">GymUP</h1>
           </div>
-          <CardTitle>{isLogin ? "Entrar" : "Criar Conta"}</CardTitle>
+          <CardTitle>Entrar</CardTitle>
           <CardDescription>
-            {isLogin
-              ? "Acesse sua conta para continuar treinando"
-              : "Crie sua conta e comece a ganhar XP"}
+            {" "}
+            Crie sua conta e comece a ganhar XP
           </CardDescription>
         </CardHeader>
 
         <CardContent>
           <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
-          
-
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -90,20 +83,18 @@ export const Login = () => {
                 required
               />
             </div>
-          
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-               Entrar
+              Entrar
             </Button>
 
             <div className="text-center">
               <button
                 type="button"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => navigation(`/sign-up`)}
                 className="text-sm text-primary hover:underline"
               >
-               
-                  Não tem conta? Criar agora
+                Não tem conta? Criar agora
               </button>
             </div>
           </form>

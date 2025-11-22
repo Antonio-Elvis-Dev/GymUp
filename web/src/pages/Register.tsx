@@ -11,46 +11,46 @@ import {
 } from "@/components/ui/card";
 import { Dumbbell } from "lucide-react";
 import z from "zod";
-import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useNavigation, useSearchParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { RegisterPayLoad, registerUser } from "@/api/register";
-import { toast } from "sonner";
-import { createSession } from "@/api/create-session";
 import { useAuth } from "@/hooks/useAuth";
 
-const registerFormSchema = z.object({
-  name: z.string().min(3, 'O nome deve ter pelo menos 3 caracteres.'),
-  email: z.string().email("A senha deve ter pelo menos 6 caracteres."),
-  password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
-  confirmPassword: z.string()
-})
-.refine((data) => data.password === data.confirmPassword, {
-  message: 'As senhas não coincidem.',
-  path: ['confirmPassword']
-})
+const registerUserFormSchema = z
+  .object({
+    name: z.string().min(3, "O nome deve ter pelo menos 3 caracteres."),
+    email: z.string().email("A senha deve ter pelo menos 6 caracteres."),
+    password: z.string().min(6, "A senha deve ter pelo menos 6 caracteres."),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "As senhas não coincidem.",
+    path: ["confirmPassword"],
+  });
 
-type RegisterForm = z.infer<typeof registerFormSchema>;
+type RegisterUserForm = z.infer<typeof registerUserFormSchema>;
 
 export const Register = () => {
-  const { signIn } = useAuth();
+  const { signUp } = useAuth();
 
   const [searchParams] = useSearchParams();
-
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     formState: { isSubmitting },
-  } = useForm<RegisterForm>({
+    reset,
+  } = useForm<RegisterUserForm>({
     defaultValues: {
+      name: searchParams.get("") ?? "",
       email: searchParams.get("email") ?? "",
       password: searchParams.get("password") ?? "",
+      confirmPassword: searchParams.get("confirmPassword") ?? "",
     },
   });
 
-  async function handleSignIn(data: RegisterForm) {
-    signIn(data);
+  async function handleSignUp(data: RegisterUserForm) {
+    signUp(data);
+    reset();
   }
 
   // const { mutateAsync: handleRegister, isPending } = useMutation({
@@ -63,16 +63,8 @@ export const Register = () => {
   //     toast.error(errorMessage);
   //   },
   // });
-  async function onSubmit(data: RegisterForm) {
-    // Prepara o payload removendo a confirmação de senha
-    // const { confirmPassword, ...registerData } = data
-    // O type 'registerData' agora é inferido corretamente como 'RegisterPayload'
-    // await handleRegister(registerData as RegisterPayLoad)
-    // Nota: O 'try/catch' é opcional aqui, pois 'onError' do useMutation já lida com o erro.
-  }
 
- 
-
+  const navigation = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
 
   return (
@@ -94,19 +86,18 @@ export const Register = () => {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit(handleSignIn)} className="space-y-4">
-            
-              <div className="space-y-2">
-                <Label htmlFor="name">Nome completo</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Seu nome"
-                  {...register('name')}
-                  required={!isLogin}
-                />
-              </div>
-          
+          <form onSubmit={handleSubmit(handleSignUp)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome completo</Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Seu nome"
+                {...register("name")}
+                required={!isLogin}
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -128,31 +119,29 @@ export const Register = () => {
                 required
               />
             </div>
-           
+
             <div className="space-y-2">
               <Label htmlFor="password">Confirmar senha</Label>
               <Input
                 id="confirmPassword"
                 type="password"
                 placeholder="••••••••"
-                 {...register('confirmPassword')}
+                {...register("confirmPassword")}
                 required
               />
             </div>
-            
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-               Entrar
+              Criar conta
             </Button>
 
             <div className="text-center">
               <button
                 type="button"
-                // onClick={}
+                onClick={() => navigation(`/sign-in`)}
                 className="text-sm text-primary hover:underline"
               >
-               
-                  Não tem conta? Criar agora
+                Fazer login!
               </button>
             </div>
           </form>
