@@ -11,13 +11,17 @@ export interface GetMeResponse {
   created_at: Date;
 }
 
-export async function getMe(user): Promise<GetMeResponse> {
+export async function getMe(token:string): Promise<GetMeResponse> {
   try {
     const response = await api.get("/me", {
-      auth: user.token,
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
     });
-    return response.data;
+    return response.data.user;
   } catch (error) {
     throw error as AxiosError;
   }
 }
+
+
