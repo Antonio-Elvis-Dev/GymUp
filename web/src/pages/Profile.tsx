@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/gamification/Badge";
 import { StatsCard } from "@/components/ui/stats-card";
-import { mockUser, mockCheckInHistory } from "@/data/mockData";
+import { mockCheckInHistory } from "@/data/mockData";
 import {
   User,
   Trophy,
@@ -21,11 +21,59 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTrigger,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
 export const Profile = () => {
+  const { signOut, userData, updateUser } = useAuth();
 
-  const {signOut} = useAuth()
- async function handleSignOut() {
+  async function handleSignOut() {
     signOut();
+  }
+
+  // form state
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (userData) {
+      setName(userData.name ?? "");
+      setEmail(userData.email ?? "");
+    }
+  }, [userData]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    try {
+      const payload: any = {};
+      if (name) payload.name = name;
+      if (email) payload.email = email;
+      if (password) payload.password = password;
+      if (avatarFile) payload.avatarFile = avatarFile;
+
+      // Só envia se houver algo para atualizar
+      if (Object.keys(payload).length === 0) {
+        // toast informativo já é feito, ou pode ignorar
+        return;
+      }
+
+      await updateUser(payload);
+      setOpen(false);
+      setPassword("");
+    } catch (err) {
+      // error handled in context
+    }
   }
   return (
     <div className="pb-20 bg-background min-h-screen">
@@ -34,37 +82,86 @@ export const Profile = () => {
         <div className="flex items-center gap-4">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <img
-                src={mockUser.avatar}
-                alt="Avatar"
-                className="w-20 h-20 rounded-full border-4 border-success-foreground/20"
-              />
+              <div className="w-20 h-20 rounded-full border-4 border-success-foreground/20 bg-muted flex items-center justify-center">
+                {userData?.avatar ? (
+                  <img
+                    src={userData.avatar}
+                    alt="Avatar"
+                    className="w-20 h-20 rounded-full"
+                  />
+                ) : (
+                  <svg className="w-10 h-10 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuLabel>Conta</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Button className="flex flex-1 "
-                
-                >Editar</Button>
+                <Button className="flex flex-1" onClick={() => setOpen(true)}>
+                  Editar
+                </Button>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Button className="flex flex-1 bg-red-600"
-                onClick={()=>handleSignOut()}
-                >Sair</Button>
+                <Button className="flex flex-1 bg-red-600" onClick={() => handleSignOut()}>
+                  Sair
+                </Button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Dialog fora do Dropdown, controlado por state */}
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Editar perfil</DialogTitle>
+                <DialogDescription>Atualize sua foto, nome, e-mail ou senha.</DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+                <div>
+                  <label className="text-sm">Foto</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
+                    className="mt-2"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-sm">Nome</label>
+                  <Input value={name} onChange={(e) => setName(e.target.value)} className="mt-2" />
+                </div>
+
+                <div>
+                  <label className="text-sm">E-mail</label>
+                  <Input value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2" />
+                </div>
+
+                <div>
+                  <label className="text-sm">Senha (deixe vazio para não alterar)</label>
+                  <Input value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2" type="password" />
+                </div>
+
+                <DialogFooter>
+                  <Button type="submit">Salvar</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
           <div>
-            <h1 className="text-2xl font-bold">{mockUser.name}</h1>
-            <p className="text-success-foreground/80">{mockUser.email}</p>
+            <h1 className="text-2xl font-bold">{userData?.name ?? "Usuário"}</h1>
+            <p className="text-success-foreground/80">{userData?.email ?? "-"}</p>
             <div className="flex items-center gap-2 mt-2">
               <Trophy className="w-4 h-4" />
               <span className="font-semibold">
-                {mockUser.xp.toLocaleString()} XP
+                {0} XP
               </span>
               <span className="text-success-foreground/60">•</span>
-              <span>{mockUser.streak} dias seguidos</span>
+              <span>{0} dias seguidos</span>
             </div>
           </div>
         </div>
@@ -75,25 +172,25 @@ export const Profile = () => {
         <div className="grid grid-cols-2 gap-4">
           <StatsCard
             title="Dias Ativos"
-            value={mockUser.activeDays}
+            value={0}
             icon={Calendar}
             variant="primary"
           />
           <StatsCard
             title="Academias"
-            value={mockUser.gymsVisited}
+            value={0}
             icon={MapPin}
             variant="secondary"
           />
           <StatsCard
             title="Check-ins"
-            value={mockUser.totalCheckIns}
+            value={0}
             icon={Activity}
             variant="success"
           />
           <StatsCard
             title="Conquistas"
-            value={mockUser.badges.length}
+            value={0}
             icon={Award}
           />
         </div>
@@ -110,23 +207,23 @@ export const Profile = () => {
             <div className="grid grid-cols-4 gap-4">
               <Badge
                 type="first_checkin"
-                unlocked={mockUser.badges.includes("first_checkin")}
+                unlocked={false}
               />
               <Badge
                 type="streak_7"
-                unlocked={mockUser.badges.includes("streak_7")}
+                unlocked={false}
               />
               <Badge
                 type="streak_30"
-                unlocked={mockUser.badges.includes("streak_30")}
+                unlocked={false}
               />
               <Badge
                 type="streak_100"
-                unlocked={mockUser.badges.includes("streak_100")}
+                unlocked={false}
               />
               <Badge
                 type="gym_explorer"
-                unlocked={mockUser.badges.includes("gym_explorer")}
+                unlocked={false}
               />
             </div>
           </CardContent>
