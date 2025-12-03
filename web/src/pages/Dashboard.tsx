@@ -6,7 +6,7 @@ import { Badge } from "@/components/gamification/Badge";
 import { XPDisplay } from "@/components/gamification/XPDisplay";
 import { StreakDisplay } from "@/components/gamification/StreakDisplay";
 import { StatsCard } from "@/components/ui/stats-card";
-import { mockUser, mockLeaderboard, mockGymLeaderboard } from "@/data/mockData";
+import { mockLeaderboard, mockGymLeaderboard } from "@/data/mockData";
 import { 
   CheckCircle, 
   Trophy, 
@@ -29,32 +29,39 @@ export const Dashboard = () => {
     });
   };
   const { userData } = useAuth();
-console.log(userData)
   return (
     <div className="pb-20 bg-background min-h-screen">
       {/* Header */}
       <div className="bg-gradient-primary text-primary-foreground p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold">Olá, {mockUser.name}!</h1>
+        <div className="flex items-center justify-between gap-6 mb-6">
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold">Olá, {userData?.name ?? "Usuário"}!</h1>
             <p className="text-primary-foreground/80">Pronto para treinar hoje?</p>
           </div>
-          <img 
-            src={mockUser.avatar} 
-            alt="Avatar"
-            className="w-12 h-12 rounded-full border-2 border-primary-foreground/20"
-          />
-        </div>
-        
-        <div className="space-y-4">
-          <XPDisplay currentXP={mockUser.xp} size="lg" />
-          <div className="flex items-center justify-between">
-            <StreakDisplay days={mockUser.streak} />
-            <div className="text-right">
-              <div className="text-sm text-primary-foreground/80">Academia atual</div>
+          <div className="flex flex-col items-center">
+            {userData?.avatar ? (
+              <img 
+                src={userData.avatar} 
+                alt="Avatar"
+                className="w-24 h-24 rounded-full border-4 border-primary-foreground/30 object-cover"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full border-4 border-primary-foreground/30 bg-primary-foreground/10 flex items-center justify-center">
+                <svg className="w-12 h-12 text-primary-foreground/50" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
+            <div className="text-center mt-2">
+              <div className="text-sm text-primary-foreground/80">Academia atual:</div>
               <div className="font-medium">FitLife Academia</div>
             </div>
           </div>
+        </div>
+        
+        <div className="space-y-4">
+          <XPDisplay currentXP={0} size="lg" />
+          <StreakDisplay days={0} />
         </div>
       </div>
 
@@ -85,13 +92,13 @@ console.log(userData)
         <div className="grid grid-cols-2 gap-4">
           <StatsCard
             title="Check-ins"
-            value={mockUser.totalCheckIns}
+            value={0}
             icon={Calendar}
             subtitle="Total"
           />
           <StatsCard
             title="Academias"
-            value={mockUser.gymsVisited}
+            value={0}
             icon={Building2}
             subtitle="Visitadas"
           />
@@ -107,10 +114,10 @@ console.log(userData)
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-4 gap-4">
-              <Badge type="streak_7" unlocked={mockUser.badges.includes("streak_7")} />
-              <Badge type="streak_30" unlocked={mockUser.badges.includes("streak_30")} />
-              <Badge type="streak_100" unlocked={mockUser.badges.includes("streak_100")} />
-              <Badge type="gym_explorer" unlocked={mockUser.badges.includes("gym_explorer")} />
+              <Badge type="streak_7" unlocked={false} />
+              <Badge type="streak_30" unlocked={false} />
+              <Badge type="streak_100" unlocked={false} />
+              <Badge type="gym_explorer" unlocked={false} />
             </div>
           </CardContent>
         </Card>
