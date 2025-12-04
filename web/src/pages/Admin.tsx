@@ -12,16 +12,22 @@ import {
   Building2,
   Clock,
   UserCheck,
+  MapPin,
 } from "lucide-react";
 
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+
 export const Admin = () => {
   const [pendingCheckIns, setPendingCheckIns] = useState(mockPendingCheckIns);
+  
+  // 1. AJUSTADO: Estado agora reflete o Zod Schema do Back-end
   const [gymForm, setGymForm] = useState({
-    name: "",
-    address: "",
+    title: "",
+    description: "",
     phone: "",
+    latitude: "",
+    longitude: "",
   });
 
   const handleApproveCheckIn = (id: string) => {
@@ -38,13 +44,45 @@ export const Admin = () => {
     });
   };
 
-  const handleAddGym = (e: React.FormEvent) => {
+  // 2. AJUSTADO: Função de envio
+  const handleAddGym = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast("Academia cadastrada", {
-      description: `${gymForm.name} foi adicionada com sucesso`,
-    });
-    setGymForm({ name: "", address: "", phone: "" });
+
+    try {
+      // Conversão dos dados para o formato que o Back-end espera (Number para lat/long)
+      const dataToSend = {
+        title: gymForm.title,
+        description: gymForm.description,
+        phone: gymForm.phone === "" ? null : gymForm.phone, // Trata string vazia como null se necessário
+        latitude: Number(gymForm.latitude),
+        longitude: Number(gymForm.longitude),
+      };
+
+      // AQUI ENTRARIA SUA CHAMADA PARA A API
+      // await api.post('/gyms', dataToSend);
+
+      console.log("Enviando para o back-end:", dataToSend); 
+
+      toast("Academia cadastrada", {
+        description: `${gymForm.title} foi adicionada com sucesso`,
+      });
+
+      // Limpar formulário
+      setGymForm({
+        title: "",
+        description: "",
+        phone: "",
+        latitude: "",
+        longitude: "",
+      });
+
+    } catch (error) {
+      toast("Erro ao cadastrar", {
+        description: "Verifique os dados informados.",
+      });
+    }
   };
+
   return (
     <div className="pb-20 bg-background min-h-screen">
       {/* Header */}
@@ -149,42 +187,47 @@ export const Admin = () => {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleAddGym} className="space-y-4">
+                  
+                  {/* TITLE */}
                   <div className="space-y-2">
-                    <Label htmlFor="gym-name">Nome da Academia</Label>
+                    <Label htmlFor="gym-title">Nome da Academia</Label>
                     <Input
-                      id="gym-name"
+                      id="gym-title"
                       placeholder="Ex: FitLife Academia"
-                      value={gymForm.name}
+                      value={gymForm.title}
                       onChange={(e) =>
                         setGymForm((prev) => ({
                           ...prev,
-                          name: e.target.value,
+                          title: e.target.value,
                         }))
                       }
                       required
                     />
                   </div>
 
+                  {/* DESCRIPTION */}
                   <div className="space-y-2">
-                    <Label htmlFor="gym-address">Endereço</Label>
+                    <Label htmlFor="gym-description">Descrição</Label>
                     <Input
-                      id="gym-address"
-                      placeholder="Rua, número, bairro, cidade"
-                      value={gymForm.address}
+                      id="gym-description"
+                      placeholder="Fale um pouco sobre a academia..."
+                      value={gymForm.description}
                       onChange={(e) =>
                         setGymForm((prev) => ({
                           ...prev,
-                          address: e.target.value,
+                          description: e.target.value,
                         }))
                       }
                       required
                     />
                   </div>
 
+                  {/* PHONE */}
                   <div className="space-y-2">
                     <Label htmlFor="gym-phone">Telefone</Label>
                     <Input
                       id="gym-phone"
+                      type="tel"
                       placeholder="(11) 99999-9999"
                       value={gymForm.phone}
                       onChange={(e) =>
@@ -193,8 +236,50 @@ export const Admin = () => {
                           phone: e.target.value,
                         }))
                       }
-                      required
                     />
+                  </div>
+
+                  {/* LATITUDE & LONGITUDE */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="gym-latitude" className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" /> Latitude
+                      </Label>
+                      <Input
+                        id="gym-latitude"
+                        type="number"
+                        step="any" // Permite decimais
+                        placeholder="-23.55052"
+                        value={gymForm.latitude}
+                        onChange={(e) =>
+                          setGymForm((prev) => ({
+                            ...prev,
+                            latitude: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="gym-longitude" className="flex items-center gap-1">
+                         Longitude
+                      </Label>
+                      <Input
+                        id="gym-longitude"
+                        type="number"
+                        step="any" // Permite decimais
+                        placeholder="-46.63330"
+                        value={gymForm.longitude}
+                        onChange={(e) =>
+                          setGymForm((prev) => ({
+                            ...prev,
+                            longitude: e.target.value,
+                          }))
+                        }
+                        required
+                      />
+                    </div>
                   </div>
 
                   <Button type="submit" className="w-full">
