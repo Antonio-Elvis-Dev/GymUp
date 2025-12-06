@@ -17,11 +17,12 @@ import {
 
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { api } from "@/lib/axios";
 
 export const Admin = () => {
   const [pendingCheckIns, setPendingCheckIns] = useState(mockPendingCheckIns);
   
-  // 1. AJUSTADO: Estado agora reflete o Zod Schema do Back-end
+  //Estado agora reflete o Zod Schema do Back-end
   const [gymForm, setGymForm] = useState({
     title: "",
     description: "",
@@ -44,12 +45,12 @@ export const Admin = () => {
     });
   };
 
-  // 2. AJUSTADO: Função de envio
+  // FUNÇÃO DE ENVIO
   const handleAddGym = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      // Conversão dos dados para o formato que o Back-end espera (Number para lat/long)
+      // formatando os dados para envio
       const dataToSend = {
         title: gymForm.title,
         description: gymForm.description,
@@ -58,13 +59,16 @@ export const Admin = () => {
         longitude: Number(gymForm.longitude),
       };
 
-      // AQUI ENTRARIA SUA CHAMADA PARA A API
-      // await api.post('/gyms', dataToSend);
-
+      // CHAMADA PARA A API
+      await api.post('/gyms',dataToSend);
       console.log("Enviando para o back-end:", dataToSend); 
 
       toast("Academia cadastrada", {
         description: `${gymForm.title} foi adicionada com sucesso`,
+        action: {
+          label: "Undo",
+          onClick: () => console.log("Undo"),
+        },
       });
 
       // Limpar formulário
