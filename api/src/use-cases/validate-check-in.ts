@@ -2,6 +2,7 @@ import { CheckIn } from "@prisma/client";
 import { CheckInsRepository } from "@/repositories/check-ins-repository";
 import { ResourceNotFoundError } from "./errors/resource-not-found-error";
 import dayjs from "dayjs";
+import weekOfYear from "dayjs/plugin/weekOfYear";
 import { LateCheckInValidationError } from "./errors/late-check-in-validation-error";
 import { UsersRepository } from "@/repositories/users-repository";
 
@@ -11,6 +12,8 @@ interface ValidateCheckInUseCaseRequest {
 interface ValidateCheckInUseCaseResponse {
   checkIn: CheckIn;
 }
+
+dayjs.extend(weekOfYear);
 
 export class ValidateCheckInUseCase {
   constructor(
@@ -44,11 +47,39 @@ export class ValidateCheckInUseCase {
     await this.checkInsRepository.save(checkIn);
 
     const user = await this.usersRepository.findById(checkIn.user_id);
+
     if (user) {
       user.xp += xpAmount;
+
+      const today = dayjs(new Date());
+      const currentWeekStr = `${today.year()}-${today.week()}`;
+
+      if (user.lastStreakWeek !== currentWeekStr) {
+        const lastWeekDate = today.subtract(1, "week");
+        const startOfLastWeek = lastWeekDate.startOf("week").toDate();
+        const endOfLastWeek = lastWeekDate.endOf("week").toDate();
+
+        // Conta quantos check-ins validados ele teve na semana anterior
+        const countLastWeek =
+          await this.checkInsRepository.countByUserIdAndDateRange(
+            user.id,
+            startOfLastWeek,
+            endOfLastWeek
+          );
+
+        // REGRA: Se teve menos de 3 treinos na semana passada, perde a ofensiva
+        if (countLastWeek < 3) {
+          user.streak = 0;
+        }
+
+        user.lastStreakWeek = currentWeekStr;
+      }
+
+      // Se não, quebrou a sequência (ou é a primeira vez), reseta para 1
+      user.streak = 1;
+
       await this.usersRepository.save(user);
     }
-
     return {
       checkIn,
     };

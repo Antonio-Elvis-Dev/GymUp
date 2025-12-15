@@ -31,6 +31,8 @@ export class InMemoryUsersRepository implements UsersRepository {
       avatar: null,
       xp: 0,
       role: "MEMBER" as const,
+      streak: 10,
+      lastStreakWeek: null
     };
     this.items.push(user);
     return user;
