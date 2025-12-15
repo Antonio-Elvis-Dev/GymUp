@@ -30,16 +30,16 @@ services:
       - app-network
 
   db:
-    image: bitnami/postgresql
+    image: postgres:17-alpine
+    environment:
+      - POSTGRES_USER=docker
+      - POSTGRES_PASSWORD=docker
+      - POSTGRES_DB=dbGymUp
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     container_name: database_gym_up
     ports:
       - "5432:5432"
-    environment:
-      - POSTGRESQL_USERNAME=docker
-      - POSTGRESQL_PASSWORD=docker
-      - POSTGRESQL_DATABASE=dbGymUp
-    volumes:
-      - pgdata:/bitnami/postgresql
     networks:
       - app-network
 

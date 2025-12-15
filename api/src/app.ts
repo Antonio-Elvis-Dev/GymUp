@@ -7,8 +7,29 @@ import { gymsRoutes } from "./http/controllers/gyms/routes";
 import { checkInsRoutes } from "./http/controllers/check-ins/routes";
 import fastifyCookie from "@fastify/cookie";
 import cors from "@fastify/cors";
+import fastifyMultipart from "@fastify/multipart";
+import fastifyStatic from "@fastify/static";
+import path from "path";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+import fs from "node:fs";
+
 
 export const app = fastify();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const uploadsPath = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadsPath)) {
+  fs.mkdirSync(uploadsPath);
+}
+
+app.register(fastifyStatic, {
+  root: uploadsPath,
+  prefix: '/uploads/',
+});
 
 app.register(cors, {
   origin: "http://localhost:8080",
@@ -27,6 +48,11 @@ app.register(fastifyJwt, {
     expiresIn: "10m",
   },
 });
+
+
+app.register(fastifyMultipart)
+
+
 
 app.register(fastifyCookie);
 

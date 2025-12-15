@@ -9,13 +9,13 @@ jobs:
 
         services:
             postgres:
-                image: bitnami/postgresql
+                image: postgres:17-alpine
                 ports:
                     - 5434:5432
                 env:
-                    POSTGRESQL_USERNAME: docker
-                    POSTGRESQL_PASSWORD: docker
-                    POSTGRESQL_DATABASE: apisolid
+                    POSTGRES_USER: docker
+                    POSTGRES_PASSWORD: docker
+                    POSTGRES_DB: dbGymUp
 
         steps:
             - uses: actions/checkout@v3
@@ -30,4 +30,4 @@ jobs:
             - run: npm run test:e2e
                 env:
                     JWT_SECRET: testing
-                    DATABASE_URL: "postgresql://docker:docker@localhost:5434/apisolid"
+                    DATABASE_URL: "postgresql://docker:docker@localhost:5434/dbGymUp"

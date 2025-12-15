@@ -9,6 +9,13 @@ export interface GetMeResponse {
   password_hash: string;
   role: "ADMIN" | "MEMBER";
   created_at: Date;
+
+  avatar?: string;    
+  xp: number;            
+  streak: number;        
+  totalCheckIns: number; 
+  gymsVisited: number;   
+  badges: string[];
 }
 
 export async function getMe(token:string): Promise<GetMeResponse> {
