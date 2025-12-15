@@ -1,18 +1,17 @@
-import { api } from '../lib/axios'
+import { api } from "../lib/axios";
 
 interface CreateSessionParams {
-  email: string
-  password: string
+  email: string;
+  password: string;
 }
 
 interface CreateSessionResponse {
-  
-  token: string
+  token: string;
 }
 
 export async function createSession({ email, password }: CreateSessionParams) {
   const response = await api.post<CreateSessionResponse>(
-    '/sessions',
+    "/sessions",
     {
       email,
       password,
@@ -20,9 +19,9 @@ export async function createSession({ email, password }: CreateSessionParams) {
     {
       withCredentials: true,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-    },
-  )
-  return response.data
+    }
+  );
+  return response.data;
 }

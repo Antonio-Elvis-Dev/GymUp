@@ -25,6 +25,8 @@ describe('Create Gym Use Case', () => {
             phone: '11999999999',
             latitude: -9.406466,
             longitude: -36.629427,
+            address:"Rua Antonio Matias, 1200",
+            rating: 5
 
         })
 

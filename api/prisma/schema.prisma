@@ -19,12 +19,16 @@ enum Role {
 }
 
 model User {
-  id            String   @id @default(uuid())
+  id            String  @id @default(uuid())
   name          String
-  email         String   @unique
+  email         String  @unique
   password_hash String
-  role          Role     @default(MEMBER)
-  created_at    DateTime @default(now())
+  avatar        String?
+  xp            Int     @default(0)
+
+  role Role @default(MEMBER)
+
+  created_at DateTime @default(now())
 
   checkIns CheckIn[]
 
@@ -35,9 +39,9 @@ model CheckIn {
   id           String    @id @default(uuid())
   created_at   DateTime  @default(now())
   validated_at DateTime?
-
-  user    User   @relation(fields: [user_id], references: [id])
-  user_id String
+  xpEarned     Int       @default(0)
+  user         User      @relation(fields: [user_id], references: [id])
+  user_id      String
 
   gym    Gym    @relation(fields: [gym_id], references: [id])
   gym_id String
@@ -46,14 +50,15 @@ model CheckIn {
 }
 
 model Gym {
-  id          String  @id @default(uuid())
+  id          String    @id @default(uuid())
   title       String
+  address     String?
   description String?
   phone       String?
   latitude    Decimal
   longitude   Decimal
-
-  checkIns CheckIn[]
+  rating      Decimal?  @default(0)
+  checkIns    CheckIn[]
 
   @@map("gyms")
 }

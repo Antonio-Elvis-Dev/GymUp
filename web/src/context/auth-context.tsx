@@ -3,9 +3,8 @@ import { getMe, GetMeResponse } from "@/api/get-me";
 import { registerUser } from "@/api/register";
 import { useMutation } from "@tanstack/react-query";
 import { createContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { string, z } from "zod";
+import { z } from "zod";
 interface AuthProps {
   children: React.ReactNode;
 }
@@ -14,6 +13,7 @@ const signInZod = z.object({
   email: z.string().email(),
   password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres."),
 });
+
 const signUpZod = z.object({
   name: z.string(),
   email: z.string().email(),
@@ -38,6 +38,7 @@ interface AuthContextType {
   userData: GetMeResponse | null;
   signOut: () => void;
   signUp: (credentials: SignUpForm) => Promise<void>;
+  fetchCurrentUser: () => Promise<GetMeResponse>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -49,15 +50,17 @@ export function AuthProvider({ children }: AuthProps) {
   const [userData, setUserData] = useState<GetMeResponse | null>(null);
 
   const [isLoading, setIsLoading] = useState(true);
+
   const { mutateAsync: authenticate } = useMutation({
     mutationFn: createSession,
   });
+
   const { mutateAsync: createUser } = useMutation({
     mutationFn: registerUser,
   });
 
   const { mutateAsync: getCurrentUser } = useMutation({
-    mutationFn: getMe,
+    mutationFn: (token: string) => getMe(token),
   });
 
   useEffect(() => {
@@ -81,7 +84,6 @@ export function AuthProvider({ children }: AuthProps) {
   async function signIn({ email, password }: SignInForm) {
     try {
       const { token } = await authenticate({ email, password });
-
       const loggerUser = { token };
       localStorage.setItem("authToken", token);
       localStorage.setItem("authUser", JSON.stringify(loggerUser));
@@ -128,9 +130,22 @@ export function AuthProvider({ children }: AuthProps) {
   }
 
   async function fetchCurrentUser() {
-    const currentUserData = await getCurrentUser(user);
-    console.log(currentUserData);
-    setUserData(currentUserData);
+    const stored = localStorage.getItem("authUser");
+
+    if (!stored) return;
+
+    const { token } = JSON.parse(stored);
+
+    try {
+      const response = await getCurrentUser(token);
+      setUser({
+        token,
+      });
+      setUserData(response);
+      return token;
+    } catch (error) {
+      console.log("Erro ao buscar usuário:", error);
+    }
   }
 
   return (
@@ -143,6 +158,7 @@ export function AuthProvider({ children }: AuthProps) {
         user,
         isLoading,
         userData,
+        fetchCurrentUser,
       }}
     >
       {children}

@@ -9,15 +9,26 @@ export interface GetMeResponse {
   password_hash: string;
   role: "ADMIN" | "MEMBER";
   created_at: Date;
+
+  avatar?: string;    
+  xp: number;            
+  streak: number;        
+  totalCheckIns: number; 
+  gymsVisited: number;   
+  badges: string[];
 }
 
-export async function getMe(user): Promise<GetMeResponse> {
+export async function getMe(token:string): Promise<GetMeResponse> {
   try {
     const response = await api.get("/me", {
-      auth: user.token,
+      headers:{
+        Authorization:`Bearer ${token}`
+      }
     });
-    return response.data;
+    return response.data.user;
   } catch (error) {
     throw error as AxiosError;
   }
 }
+
+

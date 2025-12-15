@@ -22,11 +22,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 export const Profile = () => {
-
-  const {signOut} = useAuth()
- async function handleSignOut() {
+  const { signOut,userData } = useAuth();
+  async function handleSignOut() {
     signOut();
   }
+
+
   return (
     <div className="pb-20 bg-background min-h-screen">
       {/* Header */}
@@ -44,20 +45,21 @@ export const Profile = () => {
               <DropdownMenuLabel>Conta</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Button className="flex flex-1 "
-                
-                >Editar</Button>
+                <Button className="flex flex-1 ">Editar</Button>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Button className="flex flex-1 bg-red-600"
-                onClick={()=>handleSignOut()}
-                >Sair</Button>
+                <Button
+                  className="flex flex-1 bg-red-600"
+                  onClick={() => handleSignOut()}
+                >
+                  Sair
+                </Button>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           <div>
-            <h1 className="text-2xl font-bold">{mockUser.name}</h1>
-            <p className="text-success-foreground/80">{mockUser.email}</p>
+            <h1 className="text-2xl font-bold">{userData?.name}</h1>
+            <p className="text-success-foreground/80">{userData?.email}</p>
             <div className="flex items-center gap-2 mt-2">
               <Trophy className="w-4 h-4" />
               <span className="font-semibold">
