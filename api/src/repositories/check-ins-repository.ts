@@ -7,4 +7,5 @@ export interface CheckInsRepository {
     countByUserId(userId: string): Promise<number>
     create(data: Prisma.CheckInUncheckedCreateInput): Promise<CheckIn>
     save(checkIn:CheckIn):Promise<CheckIn>
+    countByUserIdAndDateRange(userId: string, startDate: Date, endDate: Date): Promise<number>
 }

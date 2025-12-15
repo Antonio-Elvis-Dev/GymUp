@@ -67,4 +67,22 @@ export class InMemoryCheckInsRepository implements CheckInsRepository {
 
     return checkIn;
   }
+  async countByUserIdAndDateRange(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<number> {
+    return this.items.filter((checkIn) => {
+      const checkInDate = dayjs(checkIn.created_at);
+      const isOnDateRange =
+        checkInDate.isAfter(startDate) && checkInDate.isBefore(endDate);
+
+      // Verifica se é do usuário, se está no prazo e se foi validado (opcional, mas recomendado para consistência)
+      return (
+        checkIn.user_id === userId &&
+        isOnDateRange &&
+        checkIn.validated_at !== null
+      );
+    }).length;
+  }
 }
