@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,16 +17,87 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { useMutation } from "@tanstack/react-query";
+import { createCheckIn } from "@/api/check-in";
+import { fetchNearbyGyms, Gym } from "@/api/fetch-nearby-gyms";
 
 export const Dashboard = () => {
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
-  const { userData } = useAuth();
-  const handleCheckIn = () => {
-    setHasCheckedIn(true);
-    toast("Check-in realizado!", {
-      description: "+50 XP adicionados. Continue assim!",
+
+  const { userData, fetchCurrentUser } = useAuth();
+  const [ selectedGymId, setSelectedGymId ] = useState<string | null>(null);
+  const [ nearbyGyms, setNearbyGyms ] = useState<Gym[]>([]);
+
+  const [coords, setCoords] = useState<{ lat: number; long: number } | null>(
+    null
+  );
+// console.log(userData)
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userCoords = {
+          lat: position.coords.latitude,
+          long: position.coords.longitude,
+        };
+        fetchNearbyGyms({
+          userLatitude:userCoords.lat,
+          userLongitude:userCoords.long,
+        }).then(gyms => {
+        setNearbyGyms(gyms);
+        // Seleciona a primeira automaticamente (opcional)
+        if (gyms.length > 0) {
+            setSelectedGymId(gyms[0].id);
+        }
+      });
+      },
+      (error) => {
+        console.error("Error ao obter localização", error);
+        toast.error("Precisamos da sua localização para o check-in!");
+      }
+    );
+  }, []);
+
+  const { mutateAsync: doCheckIn, isPending } = useMutation({
+    mutationFn: createCheckIn,
+    onSuccess: () => {
+      toast.success("Check-in realizado!", {
+        description: "+50 XP adicionados. Continue assim!",
+      });
+      fetchCurrentUser(); // Atualiza os dados do usuário (XP e Streak) na hora
+    },
+    onError: (error: any) => {
+      toast.error("Erro ao fazer check-in", {
+        description: error.response?.data?.message || "Tente novamente.",
+      });
+    },
+  });
+
+  async function handleCheckIn() {
+    if (!coords || !selectedGymId) {
+        return toast.error("Nenhuma academia próxima encontrada.");
+    }
+
+    await doCheckIn({
+        gymId: selectedGymId, // Usa o ID da academia encontrada
+        userLatitude: coords.lat,
+        userLongitude: coords.long
     });
-  };
+  }
+  // async function handleCheckIn() {
+  //   if (!coords) {
+  //       return toast.error("Localização não encontrada. Verifique seu GPS.");
+  //   }
+  //   const GYM_ID_TESTE = "b5678e99-3bf4-4855-9112-bde66fede2db"; 
+
+  //   await doCheckIn({
+  //       gymId: GYM_ID_TESTE,
+  //       userLatitude: coords.lat,
+  //       userLongitude: coords.long
+  //   });
+  // }
+const userAvatar = userData?.avatar || "https://github.com/shadcn.png";
+
+
   return (
     <div className="pb-20 bg-background min-h-screen">
       {/* Header */}
@@ -39,16 +110,16 @@ export const Dashboard = () => {
             </p>
           </div>
           <img
-            src={mockUser.avatar}
+            src={userAvatar}
             alt="Avatar"
             className="w-12 h-12 rounded-full border-2 border-primary-foreground/20"
           />
         </div>
 
         <div className="space-y-4">
-          <XPDisplay currentXP={mockUser.xp} size="lg" />
+          <XPDisplay currentXP={userData?.xp} size="lg" />
           <div className="flex items-center justify-between">
-            <StreakDisplay days={mockUser.streak} />
+            <StreakDisplay days={userData?.streak} />
             <div className="text-right">
               <div className="text-sm text-primary-foreground/80">
                 Academia atual
@@ -173,7 +244,7 @@ export const Dashboard = () => {
                     <div className="flex-1">
                       <div className="font-medium text-sm">{user.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {user.xp.toLocaleString()} XP
+                        {user.xp} XP
                       </div>
                     </div>
                   </div>
@@ -209,7 +280,7 @@ export const Dashboard = () => {
                     <div className="flex-1">
                       <div className="font-medium text-sm">{gym.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {gym.totalXP.toLocaleString()} XP • {gym.members}{" "}
+                        {gym.totalXP} XP • {gym.members}{" "}
                         membros
                       </div>
                     </div>

@@ -1,6 +1,12 @@
 import { api } from "@/lib/axios";
 import { AxiosError } from "axios";
 
+interface CheckInParams {
+  gymId: string;
+  userLatitude: number;
+  userLongitude: number;
+}
+
 export interface CheckInResponse {
   id: string;
   createdAt: string;
@@ -12,17 +18,15 @@ export interface CheckInResponse {
   };
 }
 
-export async function checkIn(token:string): Promise<CheckInResponse> {
-  try {
-    const response = await api.get("/gyms/:gymId/check-ins", {
-      headers:{
-        Authorization:`Bearer ${token}`
-      }
-    });
-    return response.data.user;
-  } catch (error) {
-    throw error as AxiosError;
-  }
+export async function createCheckIn({
+  gymId,
+  userLatitude,
+  userLongitude,
+}: CheckInParams) {
+  const response = await api.post(`/gyms/${gymId}/check-ins`, {
+    userLatitude,
+    userLongitude,
+  });
+
+  return response.data;
 }
-
-

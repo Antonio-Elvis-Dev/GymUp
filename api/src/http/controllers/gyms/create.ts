@@ -20,6 +20,8 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
   const { description, latitude, longitude, phone, title, address, rating } =
     createBodySchema.parse(request.body);
 
+    // console.log(description)
+
   const creategymUseCase = makeCreateGymUseCase();
 
   await creategymUseCase.execute({

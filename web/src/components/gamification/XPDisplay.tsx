@@ -27,12 +27,12 @@ export const XPDisplay = ({ currentXP, maxXP = 1000, size = "md" }: XPDisplayPro
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-primary" />
           <span className={`font-bold text-foreground ${textSizes[size]}`}>
-            {currentXP.toLocaleString()} XP
+            {currentXP} XP
           </span>
         </div>
         {maxXP && (
           <span className="text-muted-foreground text-sm">
-            {maxXP.toLocaleString()}
+            {maxXP}
           </span>
         )}
       </div>
