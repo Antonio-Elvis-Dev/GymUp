@@ -23,9 +23,12 @@ export async function createCheckIn({
   userLatitude,
   userLongitude,
 }: CheckInParams) {
+
+  console.log(gymId, userLatitude, userLongitude);
+
   const response = await api.post(`/gyms/${gymId}/check-ins`, {
-    userLatitude,
-    userLongitude,
+   latitude: userLatitude,
+   longitude: userLongitude,
   });
 
   return response.data;

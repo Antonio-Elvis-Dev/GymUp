@@ -5,6 +5,7 @@ import { search } from "./search";
 import { nearby } from "./nearby";
 import { create } from "./create";
 import { verifyUserRole } from "@/http/middlewares/verify-user-role";
+import { checkIns } from "./check-ins";
 
 export async function gymsRoutes(app: FastifyInstance) {
 
@@ -16,5 +17,5 @@ export async function gymsRoutes(app: FastifyInstance) {
     app.post('/gyms',
         {onRequest:[verifyUserRole('ADMIN')]},
          create)
-
+app.get('/gyms/:gymId/check-ins', { onRequest: [verifyUserRole('ADMIN')] }, checkIns)
 }

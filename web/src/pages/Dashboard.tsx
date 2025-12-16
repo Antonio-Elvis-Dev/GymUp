@@ -17,21 +17,29 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { createCheckIn } from "@/api/check-in";
 import { fetchNearbyGyms, Gym } from "@/api/fetch-nearby-gyms";
+import { fetchLeaderboard } from "@/api/fetch-leaderboard";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getUserMetrics } from "@/api/get-user-metrics";
 
 export const Dashboard = () => {
   const [hasCheckedIn, setHasCheckedIn] = useState(false);
 
   const { userData, fetchCurrentUser } = useAuth();
-  const [ selectedGymId, setSelectedGymId ] = useState<string | null>(null);
-  const [ nearbyGyms, setNearbyGyms ] = useState<Gym[]>([]);
+  const [selectedGymId, setSelectedGymId] = useState<string | null>(null);
+  const [nearbyGyms, setNearbyGyms] = useState<Gym[]>([]);
 
   const [coords, setCoords] = useState<{ lat: number; long: number } | null>(
     null
   );
-// console.log(userData)
+
+  const { data: leaderboardUsers } = useQuery({
+    queryKey: ['leaderboard'],
+    queryFn: () => fetchLeaderboard(1), // Página 1 por padrão
+  });
+ 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -39,16 +47,20 @@ export const Dashboard = () => {
           lat: position.coords.latitude,
           long: position.coords.longitude,
         };
+
+        setCoords(userCoords);
+
         fetchNearbyGyms({
-          userLatitude:userCoords.lat,
-          userLongitude:userCoords.long,
+          userLatitude: userCoords.lat,
+          userLongitude: userCoords.long,
         }).then(gyms => {
-        setNearbyGyms(gyms);
-        // Seleciona a primeira automaticamente (opcional)
-        if (gyms.length > 0) {
+          setNearbyGyms(gyms);
+
+          // Seleciona a primeira automaticamente (opcional)
+          if (gyms.length > 0) {
             setSelectedGymId(gyms[0].id);
-        }
-      });
+          }
+        });
       },
       (error) => {
         console.error("Error ao obter localização", error);
@@ -74,29 +86,22 @@ export const Dashboard = () => {
 
   async function handleCheckIn() {
     if (!coords || !selectedGymId) {
-        return toast.error("Nenhuma academia próxima encontrada.");
+      return toast.error("Nenhuma academia próxima encontrada.");
     }
 
     await doCheckIn({
-        gymId: selectedGymId, // Usa o ID da academia encontrada
-        userLatitude: coords.lat,
-        userLongitude: coords.long
+      gymId: selectedGymId, // Usa o ID da academia encontrada
+      userLatitude: coords.lat,
+      userLongitude: coords.long
     });
   }
-  // async function handleCheckIn() {
-  //   if (!coords) {
-  //       return toast.error("Localização não encontrada. Verifique seu GPS.");
-  //   }
-  //   const GYM_ID_TESTE = "b5678e99-3bf4-4855-9112-bde66fede2db"; 
 
-  //   await doCheckIn({
-  //       gymId: GYM_ID_TESTE,
-  //       userLatitude: coords.lat,
-  //       userLongitude: coords.long
-  //   });
-  // }
-const userAvatar = userData?.avatar || "https://github.com/shadcn.png";
+  const userAvatar = userData?.avatar || "https://github.com/shadcn.png";
 
+  const { data: metrics } = useQuery({
+    queryKey: ['metrics'],
+    queryFn: getUserMetrics,
+  });
 
   return (
     <div className="pb-20 bg-background min-h-screen">
@@ -136,9 +141,8 @@ const userAvatar = userData?.avatar || "https://github.com/shadcn.png";
           <CardContent className="p-6">
             <div className="text-center space-y-4">
               <CheckCircle
-                className={`w-16 h-16 mx-auto ${
-                  hasCheckedIn ? "text-success" : "text-muted-foreground"
-                }`}
+                className={`w-16 h-16 mx-auto ${hasCheckedIn ? "text-success" : "text-muted-foreground"
+                  }`}
               />
               <div>
                 <h3 className="text-lg font-semibold">
@@ -163,9 +167,9 @@ const userAvatar = userData?.avatar || "https://github.com/shadcn.png";
         <div className="grid grid-cols-2 gap-4">
           <StatsCard
             title="Check-ins"
-            value={mockUser.totalCheckIns}
+            value={metrics?.checkInsCount ?? 0} // Usa o dado real ou 0
             icon={Calendar}
-            subtitle="Total"
+            subtitle="Total realizado"
           />
           <StatsCard
             title="Academias"
@@ -216,39 +220,44 @@ const userAvatar = userData?.avatar || "https://github.com/shadcn.png";
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Top Usuários
+                  <Trophy className="w-5 h-5 text-yellow-500" />
+                  Ranking Global
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                {mockLeaderboard.slice(0, 5).map((user, index) => (
-                  <div key={user.id} className="flex items-center gap-3">
-                    <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                        index === 0
-                          ? "bg-warning text-warning-foreground"
-                          : index === 1
-                          ? "bg-muted text-muted-foreground"
-                          : index === 2
-                          ? "bg-warning/60 text-warning-foreground"
-                          : "bg-accent text-accent-foreground"
-                      }`}
-                    >
-                      {index + 1}
-                    </div>
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{user.name}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {user.xp} XP
+              <CardContent>
+                <div className="space-y-4">
+                  {leaderboardUsers?.map((user, index) => (
+                    <div key={user.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <span className={`font-bold w-6 text-center ${index === 0 ? "text-yellow-500 text-xl" :
+                          index === 1 ? "text-gray-400 text-lg" :
+                            index === 2 ? "text-amber-600 text-lg" : "text-muted-foreground"
+                          }`}>
+                          {index + 1}º
+                        </span>
+
+                        <Avatar className="h-10 w-10 border-2 border-background">
+                          {/* Lógica para mostrar avatar real ou fallback */}
+                          <AvatarImage src={user.avatar ?? undefined} />
+                          <AvatarFallback>{user.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-xs text-muted-foreground">{user.streak} dias ofensiva 🔥</p>
+                        </div>
+                      </div>
+
+                      <div className="text-right">
+                        <span className="font-bold text-primary">{user.xp} XP</span>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+
+                  {(!leaderboardUsers || leaderboardUsers.length === 0) && (
+                    <p className="text-center text-muted-foreground py-4">Ainda sem ranking.</p>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
@@ -265,15 +274,14 @@ const userAvatar = userData?.avatar || "https://github.com/shadcn.png";
                 {mockGymLeaderboard.map((gym, index) => (
                   <div key={gym.id} className="flex items-center gap-3">
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                        index === 0
-                          ? "bg-warning text-warning-foreground"
-                          : index === 1
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0
+                        ? "bg-warning text-warning-foreground"
+                        : index === 1
                           ? "bg-muted text-muted-foreground"
                           : index === 2
-                          ? "bg-warning/60 text-warning-foreground"
-                          : "bg-accent text-accent-foreground"
-                      }`}
+                            ? "bg-warning/60 text-warning-foreground"
+                            : "bg-accent text-accent-foreground"
+                        }`}
                     >
                       {index + 1}
                     </div>

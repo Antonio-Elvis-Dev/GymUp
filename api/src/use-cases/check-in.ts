@@ -42,7 +42,7 @@ export class CheckInUseCase {
             { latitude: gym.latitude.toNumber(), longitude: gym.longitude.toNumber() }
         )
 
-        const MAX_DISTANCE_IN_KILOMETERS = 0.1 // 100 metros
+        const MAX_DISTANCE_IN_KILOMETERS = 3 // 100 metros
 
         if (distance > MAX_DISTANCE_IN_KILOMETERS) { // 0.1 km = 100 metros
             throw new MaxDistanceError()

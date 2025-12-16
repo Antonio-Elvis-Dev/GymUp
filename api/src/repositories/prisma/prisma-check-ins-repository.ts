@@ -37,9 +37,32 @@ export class PrismaCheckInsRepository implements CheckInsRepository {
       },
       take: 20,
       skip: (page - 1) * 20,
+      orderBy: {
+        created_at: 'desc'
+      },
+      include: {
+        gym: {
+          select: {
+            title: true
+          }
+        }
+      }
     });
 
     return checkIns;
+  }
+  async findManyByGymId(gymId: string, page: number) {
+    const checkIns = await prisma.checkIn.findMany({
+      where: { gym_id: gymId },
+      take: 20,
+      skip: (page - 1) * 20,
+      orderBy: { created_at: 'desc' },
+      include: {
+        user: true,
+        // gym: true
+      } // Trazemos o usuário para saber o nome
+    })
+    return checkIns
   }
   async countByUserId(userId: string): Promise<number> {
     const count = await prisma.checkIn.count({
@@ -77,9 +100,7 @@ export class PrismaCheckInsRepository implements CheckInsRepository {
           gte: startDate,
           lte: endDate,
         },
-        validated_at: {
-          not: null, // Opcional: conta apenas check-ins VALIDADOS
-        },
+
       },
     });
 

@@ -32,8 +32,8 @@ app.register(fastifyStatic, {
 });
 
 app.register(cors, {
-  origin: "http://localhost:8080",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+   origin: "http://localhost:8080",
+  methods: ["GET", "POST","PATCH", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
 });
@@ -44,9 +44,9 @@ app.register(fastifyJwt, {
     cookieName: "refreshToken",
     signed: false,
   },
-  sign: {
-    expiresIn: "10m",
-  },
+  // sign: {
+  //   expiresIn: "10m",
+  // },
 });
 
 

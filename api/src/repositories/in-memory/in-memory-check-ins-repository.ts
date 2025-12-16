@@ -4,6 +4,7 @@ import dayjs from "dayjs";
 import { CheckIn, Prisma } from "@prisma/client";
 //
 export class InMemoryCheckInsRepository implements CheckInsRepository {
+
   public items: CheckIn[] = [];
 
   async findById(id: string) {
@@ -39,6 +40,13 @@ export class InMemoryCheckInsRepository implements CheckInsRepository {
     return this.items
       .filter((item) => item.user_id === userId)
       .slice((page - 1) * 20, page * 20);
+  }
+
+  async findManyByGymId(gymId: string, page: number) {
+    const checkIns =  this.items.filter((item) => item.gym_id === gymId)
+      .slice((page - 1) * 20, page * 20);
+
+    return checkIns
   }
 
   async countByUserId(userId: string) {
