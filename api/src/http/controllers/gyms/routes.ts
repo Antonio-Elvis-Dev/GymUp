@@ -15,7 +15,7 @@ export async function gymsRoutes(app: FastifyInstance) {
     app.get('/gyms/nearby', nearby)
 
     app.post('/gyms',
-        {onRequest:[verifyUserRole('ADMIN')]},
-         create)
-app.get('/gyms/:gymId/check-ins', { onRequest: [verifyUserRole('ADMIN')] }, checkIns)
+        { onRequest: [verifyUserRole('ADMIN')] },
+        create)
+    app.get('/gyms/:gymId/check-ins', { onRequest: [verifyUserRole('ADMIN')] }, checkIns)
 }

@@ -12,7 +12,7 @@ import {
   Clock,
   UserCheck,
 } from "lucide-react";
-
+import { searchGyms } from "@/api/search-gyms"; // <--- Importe a busca
 import { toast } from "sonner";
 import { fetchGymCheckIns, validateCheckIn } from "@/api/admin";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
