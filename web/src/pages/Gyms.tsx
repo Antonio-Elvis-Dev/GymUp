@@ -1,15 +1,43 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { mockGyms } from "@/data/mockData";
 import { MapPin, Search, Star, Users } from "lucide-react";
+import { fetchNearbyGyms, Gym } from "@/api/fetch-nearby-gyms";
+import { toast } from "sonner";
 
 export const Gyms = () => {
   const [searchTerm, setSearchTerm] = useState("");
+  const [nearbyGyms, setNearbyGyms] = useState<Gym[]>([]);
   
   const filteredGyms = mockGyms.filter(gym =>
     gym.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+
+   useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userCoords = {
+          lat: position.coords.latitude,
+          long: position.coords.longitude,
+        };
+        fetchNearbyGyms({
+          userLatitude:userCoords.lat,
+          userLongitude:userCoords.long,
+        }).then(gyms => {
+        setNearbyGyms(gyms);
+        
+      });
+      },
+      (error) => {
+        console.error("Error ao obter localização", error);
+        toast.error("Precisamos da sua localização para o check-in!");
+      }
+    );
+  }, []);
+
+
 
   return (
     <div className="pb-20 bg-background min-h-screen">
@@ -35,12 +63,12 @@ export const Gyms = () => {
 
         {/* Gyms List */}
         <div className="space-y-3">
-          {filteredGyms.map((gym) => (
+          {nearbyGyms.map((gym) => (
             <Card key={gym.id} className="hover:shadow-md transition-shadow">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h3 className="font-semibold text-foreground">{gym.name}</h3>
+                    <h3 className="font-semibold text-foreground">{gym.title}</h3>
                     <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
                       <MapPin className="w-4 h-4" />
                       <span>{gym.address}</span>
@@ -49,19 +77,19 @@ export const Gyms = () => {
                     <div className="flex items-center gap-4 mt-3">
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 text-warning fill-current" />
-                        <span className="text-sm font-medium">{gym.rating}</span>
+                        <span className="text-sm font-medium">{gym.phone}</span>
                       </div>
                       
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Users className="w-4 h-4" />
-                        <span>{gym.members} membros</span>
+                        <span>{gym.description} membros</span>
                       </div>
                     </div>
                   </div>
                   
                   <div className="text-right">
                     <div className="text-lg font-bold text-primary">
-                      {gym.distance} km
+                      {gym.address} km
                     </div>
                     <div className="text-xs text-muted-foreground">
                       distância

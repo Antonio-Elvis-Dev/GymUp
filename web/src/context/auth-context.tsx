@@ -49,6 +49,7 @@ export function AuthProvider({ children }: AuthProps) {
   const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<GetMeResponse | null>(null);
 
+  // console.log(userData);
   const [isLoading, setIsLoading] = useState(true);
 
   const { mutateAsync: authenticate } = useMutation({
@@ -89,7 +90,10 @@ export function AuthProvider({ children }: AuthProps) {
       localStorage.setItem("authUser", JSON.stringify(loggerUser));
       setUser(loggerUser);
 
-      toast.success(`Bem-Vindo! `);
+      await fetchCurrentUser();
+
+      toast.success(`Bem-Vindo! ${userData?.name} `);
+
     } catch (error) {
       toast.error(`Credenciais inválidas  `);
     }
