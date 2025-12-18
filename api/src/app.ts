@@ -15,6 +15,10 @@ import { dirname } from "path";
 
 import fs from "node:fs";
 
+import { ResourceNotFoundError } from "@/use-cases/errors/resource-not-found-error";
+import { LateCheckInValidationError } from "@/use-cases/errors/late-check-in-validation-error";
+import { UserAlreadyExistsError } from "@/use-cases/errors/user-already-exists-error"; 
+import { InvalidCredentialsError } from "@/use-cases/errors/invalid-credentials-error";
 
 export const app = fastify();
 
@@ -67,7 +71,21 @@ app.setErrorHandler((error, _, reply) => {
       issues: error.format(),
     });
   }
+if (error instanceof ResourceNotFoundError) {
+    return reply.status(404).send({ message: error.message });
+  }
 
+  if (error instanceof LateCheckInValidationError) {
+    return reply.status(400).send({ message: error.message });
+  }
+    
+  if (error instanceof UserAlreadyExistsError) {
+    return reply.status(409).send({ message: error.message });
+  }
+
+  if (error instanceof InvalidCredentialsError) {
+    return reply.status(400).send({ message: error.message });
+  }
   if (env.NODE_ENV !== "production") {
     console.error(error);
   } else {

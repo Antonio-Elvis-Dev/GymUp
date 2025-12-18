@@ -53,13 +53,11 @@ export class ValidateCheckInUseCase {
 
       const today = dayjs(new Date());
       const currentWeekStr = `${today.year()}-${today.week()}`;
-
       if (user.lastStreakWeek !== currentWeekStr) {
         const lastWeekDate = today.subtract(1, "week");
         const startOfLastWeek = lastWeekDate.startOf("week").toDate();
         const endOfLastWeek = lastWeekDate.endOf("week").toDate();
 
-        // Conta quantos check-ins validados ele teve na semana anterior
         const countLastWeek =
           await this.checkInsRepository.countByUserIdAndDateRange(
             user.id,
@@ -67,7 +65,6 @@ export class ValidateCheckInUseCase {
             endOfLastWeek
           );
 
-        // REGRA: Se teve menos de 3 treinos na semana passada, perde a ofensiva
         if (countLastWeek < 3) {
           user.streak = 0;
         }
@@ -75,8 +72,7 @@ export class ValidateCheckInUseCase {
         user.lastStreakWeek = currentWeekStr;
       }
 
-      // Se não, quebrou a sequência (ou é a primeira vez), reseta para 1
-      user.streak = 1;
+      user.streak += 1;
 
       await this.usersRepository.save(user);
     }
