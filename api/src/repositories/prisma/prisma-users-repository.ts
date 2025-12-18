@@ -28,14 +28,21 @@ export class PrismaUsersRepository implements UsersRepository {
   }
 
   async updateXp(userId: string, newXp: number): Promise<void> {
-    throw new Error("Method not implemented.");
+    await prisma.user.update({
+        where: { id: userId },
+        data: { xp: newXp }
+    })
   }
+
   async save(data: User) {
+    
+    const { id, created_at, ...updateData } = data;
+
     const user = await prisma.user.update({
       where: {
         id: data.id,
       },
-      data,
+      data: updateData, 
     });
 
     return user;

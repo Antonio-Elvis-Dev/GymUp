@@ -11,33 +11,61 @@ import {
   Building2,
   Clock,
   UserCheck,
+  Map,
 } from "lucide-react";
 import { searchGyms } from "@/api/search-gyms"; // <--- Importe a busca
 import { toast } from "sonner";
 import { fetchGymCheckIns, validateCheckIn } from "@/api/admin";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createGym } from "@/api/create-gym";
 
 export const Admin = () => {
   // ID fixo para teste (Idealmente viria de um contexto ou seleção)
   const GYM_ID = "1f66b1d3-9fd1-4c5d-a7b4-254be15eb2be";
   const queryClient = useQueryClient();
+  const [gymForm, setGymForm] = useState({
+    title: "",
+    address: "",
+    phone: "",
+    description: "",
+    latitude: "",
+    longitude: "",
+  });
 
+  const { mutateAsync: registerGym, isPending: isRegistering } = useMutation({
+    mutationFn: createGym,
+    onSuccess: () => {
+      toast.success("Academia cadastrada com sucesso!");
+      // Limpa o formulário
+      setGymForm({
+        title: "",
+        address: "",
+        phone: "",
+        description: "",
+        latitude: "",
+        longitude: "",
+      });
+    },
+    onError: (error: any) => {
+      const msg =
+        error.response?.data?.message || "Erro ao cadastrar academia.";
+      toast.error(msg);
+    },
+  });
   // 1. Buscando dados do servidor
   const { data: allCheckIns = [] } = useQuery({
-    queryKey: ['gym-check-ins', GYM_ID],
+    queryKey: ["gym-check-ins", GYM_ID],
     queryFn: () => fetchGymCheckIns(GYM_ID),
     enabled: !!GYM_ID,
-    // refetchInterval: 5000, 
+    refetchInterval: 5000,
   });
 
   // 2. Filtrando apenas os pendentes (que não têm validated_at)
-  const pendingCheckIns = allCheckIns.filter(checkIn => !checkIn.validated_at);
+  const pendingCheckIns = allCheckIns.filter(
+    (checkIn) => !checkIn.validated_at
+  );
 
-  const [gymForm, setGymForm] = useState({
-    name: "",
-    address: "",
-    phone: "",
-  });
+
 
   // 3. Mutação de Validação
   const { mutateAsync: validate, isPending: isValidating } = useMutation({
@@ -45,11 +73,11 @@ export const Admin = () => {
     onSuccess: () => {
       toast.success("Check-in validado com sucesso!");
       // Ao invalidar, o React Query busca os dados de novo e a lista atualiza sozinha
-      queryClient.invalidateQueries({ queryKey: ['gym-check-ins'] });
+      queryClient.invalidateQueries({ queryKey: ["gym-check-ins"] });
     },
     onError: () => {
       toast.error("Erro ao validar check-in.");
-    }
+    },
   });
 
   const handleApproveCheckIn = async (id: string) => {
@@ -59,17 +87,29 @@ export const Admin = () => {
   const handleRejectCheckIn = (id: string) => {
     // Como não temos rota de rejeitar no backend ainda, apenas avisamos
     toast.info("Funcionalidade de rejeitar em desenvolvimento", {
-        description: "O check-in expirará automaticamente se não validado."
+      description: "O check-in expirará automaticamente se não validado.",
     });
   };
 
-  const handleAddGym = (e: React.FormEvent) => {
+  const handleAddGym = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Aqui você implementaria a chamada API real para criar academia
-    toast.success("Academia cadastrada (Simulação)", {
-      description: `${gymForm.name} foi adicionada com sucesso`,
-    });
-    setGymForm({ name: "", address: "", phone: "" });
+
+    try {
+      if (!gymForm.latitude || !gymForm.longitude) {
+        return toast.error("Latitude e Longitude são obrigatórias.");
+      }
+
+      await registerGym({
+        title: gymForm.title, // Backend espera 'title'
+        description: gymForm.description,
+        phone: gymForm.phone,
+        address: gymForm.address, // Adicionei campo address no form state abaixo se não tiver
+        latitude: parseFloat(gymForm.latitude),
+        longitude: parseFloat(gymForm.longitude),
+      });
+    } catch (err) {
+      // Erro tratado no onError do mutation
+    }
   };
 
   return (
@@ -121,21 +161,31 @@ export const Admin = () => {
                     >
                       <div className="flex items-center gap-3 w-full">
                         <img
-                          src={checkIn.user.avatar || "https://github.com/shadcn.png"}
+                          src={
+                            checkIn.user.avatar ||
+                            "https://github.com/shadcn.png"
+                          }
                           alt={checkIn.user.name}
                           className="w-12 h-12 rounded-full object-cover border"
                         />
                         <div>
-                          <div className="font-bold text-lg">{checkIn.user.name}</div>
+                          <div className="font-bold text-lg">
+                            {checkIn.user.name}
+                          </div>
                           <div className="text-sm text-muted-foreground flex items-center gap-1">
                             <Clock className="w-3 h-3" />
                             {/* Formatação correta da data */}
-                            {new Date(checkIn.created_at).toLocaleTimeString('pt-BR', { 
-                                hour: '2-digit', 
-                                minute: '2-digit' 
-                            })}
+                            {new Date(checkIn.created_at).toLocaleTimeString(
+                              "pt-BR",
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
                             <span className="mx-1">•</span>
-                            {new Date(checkIn.created_at).toLocaleDateString('pt-BR')}
+                            {new Date(checkIn.created_at).toLocaleDateString(
+                              "pt-BR"
+                            )}
                           </div>
                         </div>
                       </div>
@@ -183,17 +233,60 @@ export const Admin = () => {
                     <Input
                       id="gym-name"
                       placeholder="Ex: FitLife Academia"
-                      value={gymForm.name}
+                      value={gymForm.title}
                       onChange={(e) =>
                         setGymForm((prev) => ({
                           ...prev,
-                          name: e.target.value,
+                          title: e.target.value,
                         }))
                       }
                       required
                     />
                   </div>
 
+                 
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1">
+                      <Map className="w-3 h-3 text-muted-foreground" />
+                      Coordenadas (Localização)
+                    </Label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          step="any"
+                          placeholder="Latitude (ex: -23.55)"
+                          value={gymForm.latitude}
+                          onChange={(e) =>
+                            setGymForm((prev) => ({
+                              ...prev,
+                              latitude: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <Input
+                          type="number"
+                          step="any"
+                          placeholder="Longitude (ex: -46.63)"
+                          value={gymForm.longitude}
+                          onChange={(e) =>
+                            setGymForm((prev) => ({
+                              ...prev,
+                              longitude: e.target.value,
+                            }))
+                          }
+                          required
+                        />
+                      </div>
+                    </div>
+                    <p className="text-[0.8rem] text-muted-foreground">
+                      Dica: Você pode pegar esses números clicando com o botão
+                      direito no Google Maps.
+                    </p>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="gym-address">Endereço</Label>
                     <Input

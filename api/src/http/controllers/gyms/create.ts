@@ -14,13 +14,12 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
       return Math.abs(value) <= 180;
     }),
     address: z.string(),
-    rating: z.number(),
   });
 
-  const { description, latitude, longitude, phone, title, address, rating } =
+  const { description, latitude, longitude, phone, title, address } =
     createBodySchema.parse(request.body);
 
-    // console.log(description)
+  // console.log(description)
 
   const creategymUseCase = makeCreateGymUseCase();
 
@@ -31,7 +30,7 @@ export async function create(request: FastifyRequest, reply: FastifyReply) {
     latitude,
     phone,
     address,
-    rating,
+    rating: 5,
   });
 
   return reply.status(201).send();

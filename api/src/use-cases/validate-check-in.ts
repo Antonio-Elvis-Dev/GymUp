@@ -53,7 +53,7 @@ export class ValidateCheckInUseCase {
 
       const today = dayjs(new Date());
       const currentWeekStr = `${today.year()}-${today.week()}`;
-if (user.lastStreakWeek !== currentWeekStr) {
+      if (user.lastStreakWeek !== currentWeekStr) {
         const lastWeekDate = today.subtract(1, "week");
         const startOfLastWeek = lastWeekDate.startOf("week").toDate();
         const endOfLastWeek = lastWeekDate.endOf("week").toDate();
@@ -72,9 +72,9 @@ if (user.lastStreakWeek !== currentWeekStr) {
         user.lastStreakWeek = currentWeekStr;
       }
 
-      user.streak += 1; 
+      user.streak += 1;
 
-      await this.usersRepository.save(user)
+      await this.usersRepository.save(user);
     }
     return {
       checkIn,
